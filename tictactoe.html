@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tic-Tac-Toe</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    #game-container {
+      position: relative;
+      width: 310px;
+      height: 310px;
+    }
+
+    #game {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+      position: relative;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      font-size: 2.5rem;
+      background: #222;
+      border: none;
+      color: #0f0;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 1.2rem;
+    }
+
+    #reset {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background: #f00;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    #reset:hover {
+      background: #c00;
+    }
+
+    .win-line {
+      position: absolute;
+      height: 4px;
+      background: #0ff;
+      transform-origin: left center;
+      transition: 0.5s ease;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tic-Tac-Toe</h1>
+  <div id="game-container">
+    <div class="win-line" id="win-line" style="display: none;"></div>
+    <div id="game"></div>
+  </div>
+  <div id="status">Player X's turn</div>
+  <button id="reset" onclick="resetGame()">Reset</button>
+
+  <script>
+    const gameContainer = document.getElementById('game');
+    const statusText = document.getElementById('status');
+    const winLine = document.getElementById('win-line');
+
+    let board = Array(9).fill("");
+    let currentPlayer = "X";
+    let isGameActive = true;
+
+    const winPatterns = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+      [0, 4, 8], [2, 4, 6]             // Diagonals
+    ];
+
+    const winLineStyles = [
+      { top: 50, left: 0, width: 310, rotate: 0 },    // Row 1
+      { top: 155, left: 0, width: 310, rotate: 0 },   // Row 2
+      { top: 260, left: 0, width: 310, rotate: 0 },   // Row 3
+      { top: 0, left: 50, width: 310, rotate: 90 },   // Col 1
+      { top: 0, left: 155, width: 310, rotate: 90 },  // Col 2
+      { top: 0, left: 260, width: 310, rotate: 90 },  // Col 3
+      { top: 0, left: 0, width: 440, rotate: 45 },    // Diag \
+      { top: 0, left: 0, width: 440, rotate: -45 }    // Diag /
+    ];
+
+    function createBoard() {
+      gameContainer.innerHTML = "";
+      winLine.style.display = "none";
+      board.forEach((cell, index) => {
+        const cellBtn = document.createElement("button");
+        cellBtn.classList.add("cell");
+        cellBtn.setAttribute("data-index", index);
+        cellBtn.textContent = cell;
+        cellBtn.addEventListener("click", () => makeMove(index));
+        gameContainer.appendChild(cellBtn);
+      });
+    }
+
+    function makeMove(index) {
+      if (board[index] !== "" || !isGameActive) return;
+      board[index] = currentPlayer;
+      updateBoard();
+      checkWinner();
+      switchPlayer();
+    }
+
+    function updateBoard() {
+      const cells = document.querySelectorAll(".cell");
+      cells.forEach((cell, i) => {
+        cell.textContent = board[i];
+      });
+    }
+
+    function checkWinner() {
+      for (let i = 0; i < winPatterns.length; i++) {
+        const [a, b, c] = winPatterns[i];
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          isGameActive = false;
+          statusText.textContent = `Player ${board[a]} wins!`;
+          drawWinLine(i);
+          return;
+        }
+      }
+
+      if (!board.includes("")) {
+        isGameActive = false;
+        statusText.textContent = "It's a draw!";
+      }
+    }
+
+    function drawWinLine(index) {
+      const style = winLineStyles[index];
+      winLine.style.display = "block";
+      winLine.style.width = `${style.width}px`;
+      winLine.style.top = `${style.top}px`;
+      winLine.style.left = `${style.left}px`;
+      winLine.style.transform = `rotate(${style.rotate}deg)`;
+    }
+
+    function switchPlayer() {
+      if (isGameActive) {
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+        statusText.textContent = `Player ${currentPlayer}'s turn`;
+      }
+    }
+
+    function resetGame() {
+      board = Array(9).fill("");
+      currentPlayer = "X";
+      isGameActive = true;
+      statusText.textContent = "Player X's turn";
+      createBoard();
+    }
+
+    createBoard();
+  </script>
+</body>
+</html>
